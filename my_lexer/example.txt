@@ -1,0 +1,12 @@
+program var 
+int x , y , z
+begin
+x as y ;
+if x EQ y then read ( z ) else 
+	while 23 plus x and y LE z do 
+		x as x min 1 ;
+		y as y mult 3 ;
+write ( x ) ;
+for i as 1 to y do
+	if x LT i then x as i
+end @

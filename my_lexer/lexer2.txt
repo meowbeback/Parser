@@ -1,0 +1,6 @@
+{a hello world }
+program qq ; 
+var : float _val , int i
++0.256e-11 plus -1567
+if [ i EQ _val = 0 ]
+

@@ -1,0 +1,4 @@
+{ hello world }
+program qq ;
+var : float _val , int i
+if ( i EQ _val = 0 )
