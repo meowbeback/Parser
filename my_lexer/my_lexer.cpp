@@ -42,6 +42,8 @@ enum lex_type
     LEX_OPN_FGR_BRK,// 27
     LEX_CLS_FGR_BRK,// 28
     LEX_SEMICOLON,
+    LEX_SLASH,
+    LEX_STAR,
     // ОПЕРАТОРЫ
     LEX_PLUS,       // 29
     LEX_MIN,        // 30
@@ -143,7 +145,7 @@ class Lexer
     string keywords[MAX_CHAR]{ "for","do","else","program","var","begin","end","int","float","bool","if","then","to","while","read","write","true","false"};
     string ratio[MAX_CHAR]{ "as","EQ","NE","LT","LE","GT","GE"};
     string operations[MAX_CHAR]{ "plus","min","or","mult","div","and" };
-    string delims[MAX_CHAR]{ ",","[","]",":","(",")","~","{","}",";"};
+    string delims[MAX_CHAR]{ ",","[","]",":","(",")","~","{","}",";","/","*"};
     string* arrays[4] = { keywords,delims,operations,ratio };
 
 public:
@@ -212,6 +214,8 @@ lex_type Lexer::dlms[] = {
     LEX_OPN_FGR_BRK,
     LEX_CLS_FGR_BRK,
     LEX_SEMICOLON,
+    LEX_SLASH,
+    LEX_STAR
 };
 
 lex_type Lexer::rat[] = {
@@ -321,6 +325,7 @@ class Parser
     lex_type c_type;    // её тип
     int c_val;          // её значение
     Lexer lexer;
+    bool in_comment;
 public:
     //void S(); //start
     //void D(); //despcription
@@ -339,15 +344,19 @@ public:
     //void OP(); //operand
     //void ADD(); //addendum
     //void MLT(); //multiplier
+    //void COM(); //comment
 
     void gl()
     {
         curr_lex = lexer.getLex();
         c_type = curr_lex.getType();
         c_val = curr_lex.getValue();
+        if (c_type == LEX_SLASH&&!in_comment) {
+            COM();
+            gl();
+        }
     }
 
-    // Провести синтаксический разбор
     void analyze()
     {
         gl();
@@ -367,10 +376,10 @@ public:
         O();
         while (c_type == LEX_SEMICOLON) {
             gl();
-           // if (c_type != LEX_SEMICOLON) throw curr_lex;
             O();
         }
         if (c_type != LEX_END) throw curr_lex;
+        return;
     }
 
     void D() { //описание
@@ -414,9 +423,12 @@ public:
     }
 
     void CO() {
-        if (c_type != LEX_COLON) throw curr_lex;
-        gl();
         O();
+       // gl();
+        while (c_type == LEX_COLON) {
+            gl();
+            O();
+        }
         if (c_type != LEX_CLS_BRK) throw curr_lex;
         gl();
     }
@@ -449,8 +461,6 @@ public:
     }
 
     void CC() {
-        //if (c_type != LEX_WHILE) throw curr_lex;
-
         EXP();
         if (c_type != LEX_DO) throw curr_lex;
         gl();
@@ -497,8 +507,10 @@ public:
 
     void MLT() {
         if (c_type == LEX_OPN) {
+            gl();
             EXP();
-            // gl();
+            if (c_type != LEX_CLS) throw curr_lex;
+            gl();
         }
         else if (c_type != LEX_ID && c_type != LEX_NUM && c_type != LEX_TRUE && c_type != LEX_FALSE && c_type != LEX_UNAR) {
             throw curr_lex;
@@ -506,7 +518,20 @@ public:
         else gl();
 
     }
+    void COM() {
+        in_comment = true;
+        gl();
+        if (c_type != LEX_STAR) throw curr_lex;
+        do {
+            gl();
+        } while (c_type != LEX_STAR);
+        gl();
+        if (c_type != LEX_SLASH) throw curr_lex;
+        in_comment = false;
+    }
 };
+
+
 
 
 int main() {
@@ -516,7 +541,7 @@ int main() {
         try {
             Lex lex = lexer.getLex();
             cout << lex << endl;
-            if (lex.type == LEX_FIN) {
+            if (lex.type == LEX_END) {
                 break;
             }
         }

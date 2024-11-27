@@ -1,12 +1,24 @@
 program var 
+
+/ * Announcement * /
 int x , y , z
 begin
-x as y ;
+
+/ * Assign * /
+x as ( z or y ) ;
+
+/ * Conditional operator * /
 if x EQ y then read ( z ) else 
+	/ * Cycle operator * /
 	while 23 plus x and y LE z do 
-		x as x min 1 ;
-		y as y mult 3 ;
-write ( x ) ;
+		/ * Expression * /
+		x as ( x min 1.356e+10 ) ;
+		y as ( y mult -389.78 ) ;
+
+/ * Fixed cycle * /
 for i as 1 to y do
-	if x LT i then x as i
-end @
+	if x LT i then x as i 
+	/ * Compound operator * /
+	else [ for x as -3 to y do z as ( z plus 1 ) :
+	write ( x ) ]
+end 
