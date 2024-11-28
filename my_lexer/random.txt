@@ -1,4 +1,4 @@
-{ a } aaads8u 1, 343 1 / 4f 2.3e4 program fvar d_d 
+{ a } aaads8u 1 343 1 / 4 2.3e4 program fvar d_d 
 float EQ as for 2345.76e+1
-2 00.1b b1_ _shsh ;var ddos 
---  -9.67e1 e.rr -.- {( {} @
+2 01b b1 shsh var ddos 
+9.67e1 @

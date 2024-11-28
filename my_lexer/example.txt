@@ -10,7 +10,7 @@ x as ( z or y ) ;
 / * Conditional operator * /
 if x EQ y then read ( z ) else 
 	/ * Cycle operator * /
-	while 23 plus x and y LE z do 
+	while 32 plus x and y LE z do 
 		/ * Expression * /
 		x as ( x min 1.356e+10 ) ;
 		y as ( y mult -389.78 ) ;

@@ -65,117 +65,103 @@ enum lex_type
     LEX_GE          //43
 };
 
-class Lex
-{
+class Lex{ //класс - лесема
 public:
-    lex_type type;
-    int value;
+    lex_type type; //тип лексемы
+    int value; //значение лексемы
 
-    Lex(lex_type t = LEX_NULL, int v = 0)
-    {
+    Lex(lex_type t = LEX_NULL, int v = 0){
         type = t;
         value = v;
     }
-    lex_type getType()
-    {
-        return type;
-    }
-    int getValue()
-    {
-        return value;
-    }
-    friend ostream& operator << (ostream& s, Lex l)
-    {
+    lex_type getType() { return type; } //геттер типа
+    int getValue() { return value; } //геттер значения
+    
+    friend ostream& operator << (ostream& s, Lex l){ //вывод лексемы в виде (тип, номер в таблице)
         s << "(" << l.type << ',' << l.value << ");";
         return s;
     }
 };
 
-class TableId
-{
-    string identify[MAX_CHAR];
-    int top;
+class TableId{ //таблица идентификаторов
+    string identify[MAX_CHAR]; //таблица
+    int top; //номер верхнего элемента
 
 public:
-    TableId()
-    {
+    TableId(){
         top = 0;
     }
-    int put_ident(string name) {
+    int put_ident(string name) { //добавление элемента в таблицу
         identify[top] = name;
         top++;
         return top - 1;
     }
 };
-class TableNum{
+class TableNum{ //таблица чисел
     string numbers[MAX_CHAR];
     int top;
 
 public:
-    TableNum()
-    {
+    TableNum() {
         top = 0;
     }
-    int put_number(string name) {
+    int put_number(string name) { //добавление элемента в таблицу
         numbers[top] = name;
         top++;
         return top - 1;
     }
 };
-TableId ident;
-TableNum numb;
+TableId ident; //создание таблицы идентификаторов
+TableNum numb; //создание таблицы чисел
 
 class Lexer
 {
-    enum state {
-        H,
-        ID,
-        NM,
-        RTO,
-        DLM,
-        OPR,
-        ERR
+    enum state { //возможные состояния
+        H, //пробелы, переводы строк
+        ID, //идентификатор
+        NM, //число
+        RTO, //сравнение
+        DLM, //разделитель
+        OPR, //операция
+        ERR //ошибка
     };
-    state CS;
-    static lex_type kwords[];
-    static lex_type rat[];
-    static lex_type dlms[];
-    static lex_type oper[];
-    char c;
-    string keywords[MAX_CHAR]{ "for","do","else","program","var","begin","end","int","float","bool","if","then","to","while","read","write","true","false"};
-    string ratio[MAX_CHAR]{ "as","EQ","NE","LT","LE","GT","GE"};
-    string operations[MAX_CHAR]{ "plus","min","or","mult","div","and" };
-    string delims[MAX_CHAR]{ ",","[","]",":","(",")","~","{","}",";","/","*"};
+    state CS; //начальное состояние
+    static lex_type kwords[]; //типы ключевых слов
+    static lex_type rat[]; //типы операций сравнения
+    static lex_type dlms[]; //типы разделителей
+    static lex_type oper[]; //типы арифметических операций
+    char c; //текущий символ
+    string keywords[MAX_CHAR]{ "for","do","else","program","var","begin","end","int","float","bool","if","then","to","while","read","write","true","false"}; //таблица ключевых слов
+    string ratio[MAX_CHAR]{ "as","EQ","NE","LT","LE","GT","GE"}; //таблица операций отношения
+    string operations[MAX_CHAR]{ "plus","min","or","mult","div","and" }; //таблица арифметических операций
+    string delims[MAX_CHAR]{ ",","[","]",":","(",")","~","{","}",";","/","*"}; //таблица разделителей
     string* arrays[4] = { keywords,delims,operations,ratio };
 
 public:
-    FILE* fp;
+    FILE* fp; //файл на разбор
 
-    int look(string sample,string table[])
-    {
+    int look(string sample,string table[]){ //найти лексему в соответствующей таблице
         for (int i = 0; i < MAX_CHAR; i++) {
-            if (sample == table[i]) return i;
+            if (sample == table[i]) return i; //возвращает номер в таблице
         }
         return -1;
     }
 
-    bool is_ident(string& id) {
+    bool is_ident(string& id) { //проверка на идентификатор
         regex pattern(R"([a-zA-Z](\d|[a-zA-Z]|_)*)");
         return regex_match(id, pattern);
     }
 
-    bool is_number(string& num) {
+    bool is_number(string& num) { //проверка на число
         regex pattern(R"(([\d]+[D|d])|([1-7]+[O|o])|([1|0]+[B|b])|((\d(\d|[a-f|A-F])*)[H|h])|([+|-]?\d+((\.+\d+)?|\.\d+)([eE][+-]?\d+)?)|(\d+))");
         return regex_match(num, pattern);
     }
 
-    void gc()
-    {
+    void gc(){ //считывание очередного символа
         c = (char)fgetc(fp);
     }
 
-    Lexer(const char* filename)
-    {
+    Lexer(const char* filename) { //конструктор лексера
         fopen_s(&fp,filename, "r");
         CS = H; 
         gc();
@@ -240,34 +226,33 @@ lex_type Lexer::oper[] = {
 Lex Lexer::getLex() {
     int j;
     CS = H;
-    string result = "";
+    string result = ""; //результирующая лексема
     do {
-        switch (CS) {
+        switch (CS) { 
         case H: {
-            while (isspace(c)) {
+            while (isspace(c)) { //нет значащих символов
                gc();
             }
-            if (isalpha(c)) {
+            if (isalpha(c)) { //буква
                 CS = ID;
             }
-            else if (c == '+' || c == '-' || isdigit(c)) {
+            else if (c == '+' || c == '-' || isdigit(c)) { //знак или цифра
                 CS = NM;
             }
-            else if (c == '@') return Lex(LEX_FIN);
+            else if (c == '@') return Lex(LEX_FIN); //знак окончания
             else {
                 CS = DLM;
             }
             break;
         }
-        case DLM: {
-           //c={
-            while (!isspace(c) && c != '\n') {
+        case DLM: { //разделители
+            while (!isspace(c) && c != '\n') { 
                 result += c;
                 gc();
             }
             cout << result << " ";
-            j = look(result, delims);
-            if (j!=-1) {
+            j = look(result, delims); //поиск лексемы в таблице разделителей
+            if (j!=-1) { 
                 return Lex(dlms[j], j);
             }
             else {
@@ -275,38 +260,38 @@ Lex Lexer::getLex() {
             }
             break;
         }
-        case ERR: {
-            throw result;
+        case ERR: { //ошибка
+            throw result; //исключение
         }
-        case ID: {
-            while (!isspace(c)) {
+        case ID: { //идентификатор
+            while (!isspace(c)) { 
                 result += c;
                 gc();
             }
             cout << result << " ";
-            j = look(result, keywords);
+            j = look(result, keywords);  //поиск лексемы в таблице ключевых слов
             if (j!=-1) return Lex(kwords[j], j);
-            j = look(result, ratio);
+            j = look(result, ratio); //поиск лексемы в таблице операций отношения
             if (j!=-1) return Lex(rat[j], j);
-            j = look(result, operations);
+            j = look(result, operations); //поиск лексемы в таблице арифметических операций
             if (j!=-1) return Lex(oper[j], j);
-            else if (is_ident(result)) {
-                j = ident.put_ident(result);
-                return Lex(LEX_ID, j);
+            else if (is_ident(result)) { //проверка на идентификатор
+                j = ident.put_ident(result); //занесение идентификатора в таблицу
+                return Lex(LEX_ID, j); 
             }
             else {
                 CS = ERR;
                 break;
             }
         }
-        case NM: {
+        case NM: { //число
             while (!isspace(c)) {
                 result += c;
                 gc();
             }
             cout << result << " ";
-            if (is_number(result)) {
-                j = numb.put_number(result);
+            if (is_number(result)) { //проверка на число
+                j = numb.put_number(result);//занесение числа в таблицу
                 return Lex(LEX_NUM, j);
             }
             else {
@@ -326,6 +311,7 @@ class Parser
     int c_val;          // её значение
     Lexer lexer;
     bool in_comment;
+
 public:
     //void S(); //start
     //void D(); //despcription
@@ -535,23 +521,22 @@ public:
 
 
 int main() {
-    const char* name = "example.txt";
+    const char* name = "example.txt"; //анализируемый файл
     Lexer lexer(name);
     while (!feof(lexer.fp)) {
-        try {
-            Lex lex = lexer.getLex();
+        try { 
+            Lex lex = lexer.getLex(); //запуск анализатора
             cout << lex << endl;
-            if (lex.type == LEX_END) {
+            if (lex.type == LEX_END) { //символ окончания программы
                 break;
             }
         }
-        catch (string result) {
+        catch (string result) { //перехват ошибки
             cerr << " <= LEXER ERROR " << endl;
             system("pause");
             return 0;
         }
     }
-
 
     Parser parser(name);
     try {
