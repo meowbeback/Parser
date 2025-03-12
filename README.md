@@ -1,2 +1,2 @@
-Hello everyone! This is my compiler. You can write your program on my language 
-and check if it is correct 
+Hello there! This is my compiler. You can check if your code is right on my language.
+
